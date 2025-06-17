@@ -4,7 +4,7 @@ import folium
 from streamlit_folium import st_folium
 
 # 제목
-st.title("서울시 휴게음식점 위치 지도")
+st.title("CU 점포 지도")
 
 # CSV 데이터 불러오기
 df = pd.read_csv("seoul_food_permits_open_only.csv")
