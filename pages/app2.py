@@ -1,35 +1,57 @@
+# Creating the Streamlit app file
+app_code = """
 import streamlit as st
-import folium
-from streamlit_folium import st_folium
 import pandas as pd
+import pydeck as pdk
+import koreanize_matplotlib  # 한글 폰트를 위한 설정 (스트림릿 클라우드 requirements.txt에 포함 필요)
 
-st.set_page_config(page_title="CU 점포 지도", layout="wide")
-
-st.title("📍 CU 점포 지도 (서울시)")
-st.markdown("서울 및 전국 CU 점포 위치를 지도에 표시합니다.")
-
-# 엑셀 파일 불러오기
+# ---- 데이터 불러오기 ------------------------------------------------------
 @st.cache_data
-def load_data():
-    url = 'seoul_food_permits_open_only.csv'
-    df = pd.read_excel(url)
-    # 서울 지역 필터링 (옵션)
-    df_seoul = df[df['주소'].str.contains("서울")]
-    return df_seoul
+def load_data(csv_path: str) -> pd.DataFrame:
+    df = pd.read_csv(csv_path)
+    # 필요한 컬럼만 남기고 결측치 처리
+    df = df[['store_name', 'address', 'latitude', 'longitude']].copy()
+    df[['latitude', 'longitude']] = df[['latitude', 'longitude']].apply(pd.to_numeric, errors='coerce')
+    df = df.dropna(subset=['latitude', 'longitude'])
+    return df
 
-data = load_data()
+# ---- 앱 본문 -------------------------------------------------------------
+st.set_page_config(page_title='Seoul Food Permits Map', layout='wide')
+st.title('서울시 휴게음식점 인허가 현황 지도')
 
-# 서울 중심 지도 생성
-map_center = [37.5665, 126.9780]
-m = folium.Map(location=map_center, zoom_start=11)
+csv_file = 'seoul_food_permits_open_only.csv'
+df = load_data(csv_file)
 
-# 지도에 마커 추가
-for idx, row in data.iterrows():
-    folium.Marker(
-        location=[row['y좌표'], row['x좌표']],
-        popup=f"{row['매장명']}<br>{row['주소']}",
-        icon=folium.Icon(color='blue', icon='shopping-cart', prefix='fa')
-    ).add_to(m)
+# 검색 기능
+keyword = st.text_input('가게 이름 또는 주소 키워드로 검색', '')
+if keyword:
+    df = df[df['store_name'].str.contains(keyword, case=False, na=False) |
+            df['address'].str.contains(keyword, case=False, na=False)]
 
-# 지도 출력
-st_folium(m, width=900, height=600)
+st.write(f'표시 중인 업소 수: {len(df):,}곳')
+
+# ---- 지도 시각화 ---------------------------------------------------------
+st.map(df[['latitude', 'longitude']], zoom=11)
+
+# ---- 세부 데이터 보기 -----------------------------------------------------
+with st.expander('데이터 표 보기'):
+    st.dataframe(df)
+"""
+
+app_path = "/mnt/data/streamlit_food_map.py"
+with open(app_path, "w", encoding="utf-8") as f:
+    f.write(app_code)
+
+# Also create a minimal requirements.txt
+req_code = """
+streamlit
+pandas
+pydeck
+koreanize_matplotlib
+"""
+
+req_path = "/mnt/data/requirements.txt"
+with open(req_path, "w", encoding="utf-8") as f:
+    f.write(req_code)
+
+app_path, req_path
