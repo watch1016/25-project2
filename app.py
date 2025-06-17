@@ -5,7 +5,7 @@ import pandas as pd
 
 st.set_page_config(page_title="GS25 점포 지도", layout="wide")
 
-st.title("📍 GS25 점포 지도 (서울 포함 전국)")
+st.title("📍 GS25 점포 지도 (서울시)")
 st.markdown("서울 및 전국 GS25 점포 위치를 지도에 표시합니다.")
 
 # 엑셀 파일 불러오기
