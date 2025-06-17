@@ -6,12 +6,12 @@ import pandas as pd
 st.set_page_config(page_title="CU 점포 지도", layout="wide")
 
 st.title("📍 CU 점포 지도 (서울시)")
-st.markdown("서울 및 전국 GS25 점포 위치를 지도에 표시합니다.")
+st.markdown("서울 및 전국 CU 점포 위치를 지도에 표시합니다.")
 
 # 엑셀 파일 불러오기
 @st.cache_data
 def load_data():
-    url = 'GS25 점포정보_Sample.xlsx'
+    url = 'seoul_food_permits_open_only.csv'
     df = pd.read_excel(url)
     # 서울 지역 필터링 (옵션)
     df_seoul = df[df['주소'].str.contains("서울")]
